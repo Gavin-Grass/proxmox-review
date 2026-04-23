@@ -14,6 +14,12 @@ const els = {
   terminalWindow: document.querySelector("#terminalWindow"),
   terminalState: document.querySelector("#terminalState"),
   terminalOutput: document.querySelector("#terminalOutput"),
+  passcodeGate: document.querySelector("#passcodeGate"),
+  passcodeGateBackdrop: document.querySelector("#passcodeGateBackdrop"),
+  passcodeForm: document.querySelector("#passcodeForm"),
+  passcodeInput: document.querySelector("#passcodeInput"),
+  passcodeError: document.querySelector("#passcodeError"),
+  passcodeCancel: document.querySelector("#passcodeCancel"),
   presenterVault: document.querySelector("#presenterVault"),
   presenterVaultBackdrop: document.querySelector("#presenterVaultBackdrop"),
   presenterClose: document.querySelector("#presenterClose"),
@@ -75,7 +81,12 @@ const speakerNotes = [
       "Uses Bash and strict error handling.",
       "Defines default paths for the env file and systemd units.",
       "Fails fast instead of limping through a broken install."
-    ]
+    ],
+    example: [
+      "#!/usr/bin/env bash",
+      "set -Eeuo pipefail",
+      "readonly DEFAULT_ENV_PATH=\"/etc/proxmox-review/proxmox-review.env\""
+    ].join("\n")
   },
   {
     title: "2. Helpers",
@@ -83,7 +94,13 @@ const speakerNotes = [
       "Small helper functions keep the main flow clean.",
       "One function checks commands, another safely updates the env file.",
       "Template rendering fills in the real env path and timer interval."
-    ]
+    ],
+    example: [
+      "require_cmd() {",
+      "  local cmd=\"$1\"",
+      "  have_cmd \"$cmd\" || exit 1",
+      "}"
+    ].join("\n")
   },
   {
     title: "3. Inputs",
@@ -91,7 +108,13 @@ const speakerNotes = [
       "Reads command options like custom interval, repo path, or git identity.",
       "That makes the installer reusable without editing the script.",
       "Defaults still work if no options are passed."
-    ]
+    ],
+    example: [
+      "case \"$1\" in",
+      "  --interval)",
+      "    INTERVAL_OVERRIDE=\"$2\"",
+      "    shift 2"
+    ].join("\n")
   },
   {
     title: "4. Safety Checks",
@@ -99,7 +122,13 @@ const speakerNotes = [
       "Requires root because it writes into /etc and /usr/local/bin.",
       "Verifies git, sed, install, and systemctl exist.",
       "Also confirms the repo has the scripts and templates it needs."
-    ]
+    ],
+    example: [
+      "if [[ \"${EUID:-$(id -u)}\" -ne 0 ]]; then",
+      "  echo \"Run this installer as root or with sudo.\" >&2",
+      "  exit 1",
+      "fi"
+    ].join("\n")
   },
   {
     title: "5. Config Build",
@@ -107,7 +136,13 @@ const speakerNotes = [
       "Creates the real server-only env file if needed.",
       "Updates values like repo path, branch, interval, and git author.",
       "Keeps private config on Proxmox instead of in GitHub."
-    ]
+    ],
+    example: [
+      "if [[ ! -f \"$ENV_PATH\" ]]; then",
+      "  install -m 0640 \"$REPO_ROOT/config/proxmox-review.env.example\" \"$ENV_PATH\"",
+      "fi",
+      "upsert_env_var \"SYNC_INTERVAL_SECONDS\" \"$INTERVAL_VALUE\""
+    ].join("\n")
   },
   {
     title: "6. Automation",
@@ -115,7 +150,12 @@ const speakerNotes = [
       "Installs the sync script into /usr/local/bin.",
       "Builds real systemd service and timer files from templates.",
       "Uses systemd because cron cannot run every 30 seconds."
-    ]
+    ],
+    example: [
+      "install -m 0755 \"$REPO_ROOT/bin/proxmox-review-sync.sh\" \"$DEFAULT_SYNC_TARGET\"",
+      "render_template \"$SERVICE_TEMPLATE\" \"$DEFAULT_SERVICE_PATH\" \"$INTERVAL_VALUE\"",
+      "render_template \"$TIMER_TEMPLATE\" \"$DEFAULT_TIMER_PATH\" \"$INTERVAL_VALUE\""
+    ].join("\n")
   },
   {
     title: "7. Finish",
@@ -123,7 +163,12 @@ const speakerNotes = [
       "Reloads systemd so it sees the new unit files.",
       "Starts the timer and can also run one sync immediately.",
       "Prints status commands so the user can verify it worked."
-    ]
+    ],
+    example: [
+      "systemctl daemon-reload",
+      "systemctl enable --now proxmox-review-sync.timer",
+      "systemctl start proxmox-review-sync.service"
+    ].join("\n")
   },
   {
     title: "Say This",
@@ -131,7 +176,11 @@ const speakerNotes = [
       "This script turns a manual Proxmox setup into one command.",
       "It builds the private config, installs the auto-sync timer, and starts it.",
       "The result is a public-safe dashboard that updates itself."
-    ]
+    ],
+    example: [
+      "Quick summary:",
+      "\"Check environment, build config, install timer, start timer.\""
+    ].join("\n")
   }
 ];
 
@@ -151,8 +200,6 @@ let dotClicks = 0;
 let dotTimer = 0;
 let keyBuffer = "";
 let konamiIndex = 0;
-let tapeClicks = 0;
-let tapeClickTimer = 0;
 let scheduledEffects = [];
 
 function scheduleEffect(fn, delay) {
@@ -413,6 +460,38 @@ function showTerminalWindow() {
   els.terminalWindow.classList.add("is-live");
 }
 
+function isTypingField(target) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  );
+}
+
+function openPasscodeGate(prefill = "") {
+  els.passcodeGate.hidden = false;
+  els.passcodeGate.setAttribute("aria-hidden", "false");
+  els.passcodeError.hidden = true;
+  els.passcodeInput.value = prefill;
+
+  requestAnimationFrame(() => {
+    els.passcodeInput.focus();
+    els.passcodeInput.select();
+  });
+}
+
+function closePasscodeGate() {
+  els.passcodeGate.hidden = true;
+  els.passcodeGate.setAttribute("aria-hidden", "true");
+  els.passcodeError.hidden = true;
+  els.passcodeInput.value = "";
+}
+
 function renderPresenterNotes() {
   if (els.presenterGrid.childElementCount > 0) {
     return;
@@ -433,12 +512,17 @@ function renderPresenterNotes() {
       list.appendChild(item);
     });
 
-    card.append(title, list);
+    const code = document.createElement("pre");
+    code.className = "presenter-card__code";
+    code.textContent = section.example;
+
+    card.append(title, list, code);
     els.presenterGrid.appendChild(card);
   });
 }
 
 function openPresenterVault() {
+  closePasscodeGate();
   renderPresenterNotes();
   els.presenterVault.hidden = false;
   els.presenterVault.setAttribute("aria-hidden", "false");
@@ -804,8 +888,17 @@ function setupTilt(card) {
 }
 
 function handleKeydown(event) {
+  if (event.key === "Escape" && !els.passcodeGate.hidden) {
+    closePasscodeGate();
+    return;
+  }
+
   if (event.key === "Escape" && !els.presenterVault.hidden) {
     closePresenterVault();
+    return;
+  }
+
+  if (isTypingField(event.target)) {
     return;
   }
 
@@ -814,7 +907,7 @@ function handleKeydown(event) {
   keyBuffer = `${keyBuffer}${normalizedKey}`.slice(-20);
   if (keyBuffer.includes("class")) {
     keyBuffer = "";
-    openPresenterVault();
+    openPasscodeGate("class");
     return;
   }
 
@@ -849,23 +942,27 @@ function handleStatusDotClick() {
 }
 
 function handleTapeNoteClick() {
-  tapeClicks += 1;
-  window.clearTimeout(tapeClickTimer);
-  tapeClickTimer = window.setTimeout(() => {
-    tapeClicks = 0;
-  }, 1000);
-
-  if (tapeClicks >= 3) {
-    tapeClicks = 0;
-    openPresenterVault();
-  }
+  openPasscodeGate();
 }
 
 function handleTapeNoteKeydown(event) {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
-    openPresenterVault();
+    openPasscodeGate();
   }
+}
+
+function handlePasscodeSubmit(event) {
+  event.preventDefault();
+
+  if (els.passcodeInput.value.trim().toLowerCase() === "class") {
+    openPresenterVault();
+    return;
+  }
+
+  els.passcodeError.hidden = false;
+  els.passcodeInput.select();
+  triggerNoise("Wrong passcode.");
 }
 
 function setupInteractions() {
@@ -881,6 +978,9 @@ function setupInteractions() {
   els.statusDot.addEventListener("click", handleStatusDotClick);
   els.tapeNote.addEventListener("click", handleTapeNoteClick);
   els.tapeNote.addEventListener("keydown", handleTapeNoteKeydown);
+  els.passcodeForm.addEventListener("submit", handlePasscodeSubmit);
+  els.passcodeCancel.addEventListener("click", closePasscodeGate);
+  els.passcodeGateBackdrop.addEventListener("click", closePasscodeGate);
   els.presenterClose.addEventListener("click", closePresenterVault);
   els.presenterVaultBackdrop.addEventListener("click", closePresenterVault);
   document.addEventListener("keydown", handleKeydown);

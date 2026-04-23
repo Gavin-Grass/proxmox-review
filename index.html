@@ -36,6 +36,34 @@
       </div>
       <pre class="terminal-window__body" id="terminalOutput"></pre>
     </div>
+    <div class="passcode-gate" id="passcodeGate" hidden aria-hidden="true">
+      <div class="passcode-gate__backdrop" id="passcodeGateBackdrop"></div>
+      <section class="passcode-gate__panel" aria-labelledby="passcodeGateTitle">
+        <p class="passcode-gate__eyebrow">class mode // passcode check</p>
+        <h2 id="passcodeGateTitle">Enter Presenter Password</h2>
+        <p class="passcode-gate__lede">
+          This opens the installer crash sheet for the class demo.
+        </p>
+        <form class="passcode-gate__form" id="passcodeForm">
+          <label class="passcode-gate__label" for="passcodeInput">Passcode</label>
+          <input
+            class="passcode-gate__input"
+            id="passcodeInput"
+            name="passcode"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <p class="passcode-gate__error" id="passcodeError" hidden>Wrong passcode. Try again.</p>
+          <div class="passcode-gate__actions">
+            <button class="passcode-gate__button" type="submit">Unlock</button>
+            <button class="passcode-gate__button passcode-gate__button--ghost" id="passcodeCancel" type="button">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
     <div class="presenter-vault" id="presenterVault" hidden aria-hidden="true">
       <div class="presenter-vault__backdrop" id="presenterVaultBackdrop"></div>
       <section class="presenter-vault__panel" aria-labelledby="presenterVaultTitle">
@@ -53,7 +81,7 @@
         </p>
         <div class="presenter-vault__grid" id="presenterGrid"></div>
         <p class="presenter-vault__footer">
-          Hidden trigger: triple-click the tape note or type <code>class</code>. Press <code>Escape</code> to close.
+          Click the tape note to open the passcode gate. Press <code>Escape</code> to close.
         </p>
       </section>
     </div>
@@ -104,7 +132,7 @@
             tabindex="0"
             role="button"
             aria-label="Open presenter notes"
-            title="Triple-click for class mode"
+            title="Click for class mode"
           >
             <p>Safe for class demos.</p>
             <p>Unsafe for boring slides.</p>

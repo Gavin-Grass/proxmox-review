@@ -614,10 +614,151 @@ select {
   color: #ff90a0;
 }
 
-.presenter-vault {
+.passcode-gate {
   position: fixed;
   inset: 0;
   z-index: 11;
+}
+
+.passcode-gate[hidden] {
+  display: none;
+}
+
+.passcode-gate__backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top, rgba(214, 255, 63, 0.12), transparent 28%),
+    rgba(2, 4, 10, 0.74);
+  backdrop-filter: blur(10px);
+}
+
+.passcode-gate__panel {
+  position: relative;
+  width: min(540px, calc(100% - 2rem));
+  margin: 10vh auto 0;
+  padding: 1.4rem;
+  border: 1px solid rgba(214, 255, 63, 0.24);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(15, 20, 28, 0.97), rgba(8, 10, 15, 0.98));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.56);
+  overflow: hidden;
+}
+
+.passcode-gate__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 34%),
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.018) 0 2px,
+      transparent 2px 6px
+    );
+}
+
+.passcode-gate__eyebrow,
+.passcode-gate__label,
+.passcode-gate__button,
+.passcode-gate__error {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.passcode-gate__eyebrow,
+.passcode-gate__panel h2,
+.passcode-gate__lede,
+.passcode-gate__form {
+  position: relative;
+}
+
+.passcode-gate__eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--accent-3);
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.passcode-gate__panel h2 {
+  margin: 0 0 0.45rem;
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.passcode-gate__lede {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.passcode-gate__form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.passcode-gate__label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.passcode-gate__input {
+  width: 100%;
+  border: 1px solid rgba(214, 255, 63, 0.22);
+  border-radius: 18px;
+  padding: 0.95rem 1rem;
+  color: var(--text);
+  background: rgba(4, 7, 12, 0.86);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.passcode-gate__input:focus-visible {
+  outline: none;
+  border-color: rgba(214, 255, 63, 0.44);
+  box-shadow: 0 0 0 6px rgba(214, 255, 63, 0.08);
+}
+
+.passcode-gate__error {
+  margin: 0;
+  color: #ff9cab;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.passcode-gate__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.passcode-gate__button {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  color: var(--text);
+  background:
+    linear-gradient(135deg, rgba(214, 255, 63, 0.18), rgba(0, 221, 255, 0.14)),
+    rgba(9, 12, 19, 0.96);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.passcode-gate__button--ghost {
+  background: rgba(9, 12, 19, 0.92);
+}
+
+.presenter-vault {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
 }
 
 .presenter-vault[hidden] {
@@ -774,6 +915,20 @@ select {
   top: 0;
   color: var(--accent-2);
   font-family: "IBM Plex Mono", monospace;
+}
+
+.presenter-card__code {
+  margin: 0.85rem 0 0;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(3, 6, 10, 0.74);
+  color: #afffd1;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .presenter-vault__footer {
@@ -1646,6 +1801,13 @@ dd {
 
   .riot-banner {
     width: calc(100% - 1rem);
+  }
+
+  .passcode-gate__panel {
+    width: calc(100% - 1rem);
+    margin-top: 0.5rem;
+    padding: 1rem;
+    border-radius: 24px;
   }
 
   .presenter-vault__panel {
