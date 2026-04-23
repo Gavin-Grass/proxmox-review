@@ -1,0 +1,58 @@
+{
+  "site": {
+    "title": "Proxmox Review Board",
+    "generated_at": "2026-04-22T21:45:00Z",
+    "node_label": "lab-node-1",
+    "privacy_mode": "sanitized-static-report",
+    "overall_status": "warning"
+  },
+  "summary": {
+    "cpu_percent": 34,
+    "cpu_cores": 8,
+    "load": [1.18, 0.92, 0.77],
+    "uptime": "12d 4h 13m",
+    "memory": {
+      "used_bytes": 6871947673,
+      "total_bytes": 17179869184,
+      "used_percent": 40
+    },
+    "swap": {
+      "enabled": true,
+      "used_bytes": 268435456,
+      "total_bytes": 2147483648,
+      "used_percent": 12
+    },
+    "root_fs": {
+      "used_bytes": 18253611008,
+      "total_bytes": 53687091200,
+      "available_bytes": 35433480192,
+      "used_percent": 34
+    },
+    "filesystems_above_threshold": 1,
+    "virtual_machines": {
+      "running": 3,
+      "total": 4
+    },
+    "containers": {
+      "running": 2,
+      "total": 2
+    },
+    "zfs": {
+      "unhealthy": 0,
+      "total": 1
+    },
+    "services": {
+      "active": 4,
+      "inactive": 0
+    }
+  },
+  "alerts": [
+    "1 filesystem(s) are at or above 85% usage"
+  ],
+  "privacy": [
+    "Hostnames, FQDNs, IPs, MAC addresses, serial numbers, and usernames are excluded.",
+    "Guest names and guest IDs are not published; only running and total counts are shown.",
+    "Storage and ZFS data are summarized without revealing pool names or datastore names."
+  ]
+}
+

@@ -1,0 +1,18 @@
+# Copy this file to config/proxmox-review.conf or /etc/proxmox-review.conf.
+# Keep the real config out of git.
+
+# Use a generic label, not the real hostname or school/network name.
+NODE_LABEL="lab-node-1"
+
+# Thresholds used to generate alerts in the JSON report.
+CPU_ALERT_PERCENT=90
+MEMORY_ALERT_PERCENT=90
+SWAP_ALERT_PERCENT=25
+ROOT_FS_ALERT_PERCENT=85
+
+# Optional sections
+INCLUDE_ZFS=1
+INCLUDE_VM_COUNTS=1
+INCLUDE_LXC_COUNTS=1
+INCLUDE_PVE_SERVICES=1
+

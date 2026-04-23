@@ -1,0 +1,9 @@
+# Local config with real labels or deployment notes
+config/proxmox-review.conf
+*.local.conf
+.env
+
+# Temporary files
+*.log
+*.tmp
+
