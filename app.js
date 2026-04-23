@@ -67,6 +67,7 @@ const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 const defaultMetricLabels = els.metricLabels.map((node) => node.textContent);
 
 let activeMode = null;
+let currentReport = null;
 let toastTimer = 0;
 let bannerTimer = 0;
 let glitchTimer = 0;
@@ -365,7 +366,7 @@ function appendTerminalLine(text) {
 function showSecretPanel({ title, tag, ascii, copy, hint, variantClass = "" }) {
   els.secretPanel.hidden = false;
   els.secretPanel.setAttribute("aria-hidden", "false");
-  els.secretPanel.classList.remove("mode-punk");
+  els.secretPanel.classList.remove("mode-punk", "mode-lockdown");
 
   if (variantClass) {
     els.secretPanel.classList.add(variantClass);
@@ -382,7 +383,7 @@ function showSecretPanel({ title, tag, ascii, copy, hint, variantClass = "" }) {
 function hideSecretPanel() {
   els.secretPanel.hidden = true;
   els.secretPanel.setAttribute("aria-hidden", "true");
-  els.secretPanel.classList.remove("mode-punk");
+  els.secretPanel.classList.remove("mode-punk", "mode-lockdown");
 }
 
 function clearModeVisuals() {
@@ -415,9 +416,55 @@ function clearActiveMode(options = {}) {
   clearScheduledEffects();
   stopLoops();
   clearModeVisuals();
+  if (currentReport) {
+    renderReport(currentReport);
+  }
   if (announce) {
     triggerNoise(message);
   }
+}
+
+function applyPunkReadout() {
+  if (!currentReport) {
+    return;
+  }
+
+  const { site, summary } = currentReport;
+  els.overallStatus.textContent = "LOUD // CLEAN";
+  els.nodeLabel.textContent = `${site.node_label} // riot deck`;
+  els.generatedAt.textContent = `fresh mess // ${formatTimestamp(site.generated_at)}`;
+  els.privacyMode.textContent = "punk / sanitized / zero snitch";
+  els.loadMetric.textContent = `Amp ${summary.load.join(" // ")}`;
+  els.memoryDetail.textContent = `${formatBytes(summary.memory.used_bytes)} slammed into ${formatBytes(summary.memory.total_bytes)}`;
+  els.storageDetail.textContent = `${formatBytes(summary.root_fs.used_bytes)} stacked on ${formatBytes(summary.root_fs.total_bytes)}`;
+  els.guestDetail.textContent = `${summary.virtual_machines.running}/${summary.virtual_machines.total} vm // ${summary.containers.running}/${summary.containers.total} lxc // masked`;
+}
+
+function applyKonamiReadout() {
+  if (!currentReport) {
+    return;
+  }
+
+  const { site, summary } = currentReport;
+  els.overallStatus.textContent = "GHOST // MATRIX";
+  els.nodeLabel.textContent = `${site.node_label}::sim`;
+  els.generatedAt.textContent = `clock drift // ${formatTimestamp(site.generated_at)}`;
+  els.privacyMode.textContent = "matrix / sanitized / readonly";
+  els.loadMetric.textContent = `CLK ${summary.load.join(" // ")}`;
+  els.memoryDetail.textContent = `alloc ${formatBytes(summary.memory.used_bytes)} / ${formatBytes(summary.memory.total_bytes)} // cache safe`;
+  els.storageDetail.textContent = `sector ${formatBytes(summary.root_fs.used_bytes)} / ${formatBytes(summary.root_fs.total_bytes)} // readonly`;
+  els.guestDetail.textContent = `vm ${summary.virtual_machines.running}/${summary.virtual_machines.total} // lxc ${summary.containers.running}/${summary.containers.total} // ghosted`;
+}
+
+function applyLockdownReadout() {
+  els.overallStatus.textContent = "LOCKED // DENIED";
+  els.nodeLabel.textContent = "redacted";
+  els.generatedAt.textContent = "sealed after intrusion attempt";
+  els.privacyMode.textContent = "lockdown / hard redaction";
+  els.loadMetric.textContent = "telemetry sealed";
+  els.memoryDetail.textContent = "redacted";
+  els.storageDetail.textContent = "redacted";
+  els.guestDetail.textContent = "redacted";
 }
 
 function runTitleRiff(count = 3, spacing = 180) {
@@ -440,6 +487,7 @@ function activatePunkMode() {
   activeMode = "punk";
   els.body.classList.add("mode-punk");
   setMetricLabels(["CPU Riot", "RAM Wreck", "Disk Noise", "Guest Mob"]);
+  applyPunkReadout();
   showSecretPanel({
     title: "Punk Patch Loaded",
     tag: "typed: punk",
@@ -465,6 +513,7 @@ function activateKonamiMode() {
   activeMode = "konami";
   els.body.classList.add("mode-konami");
   setMetricLabels(["Boss Fight", "Combo Meter", "Loot Crate", "Crew Size"]);
+  applyKonamiReadout();
   buildMatrixField();
   showMatrixSplash(
     "GLITCH / MATRIX MODE",
@@ -485,6 +534,20 @@ function activateLockdownTheme() {
   activeMode = "lockdown";
   els.body.classList.add("mode-lockdown");
   setMetricLabels(["CPU Seal", "RAM Seal", "Disk Seal", "Guest Seal"]);
+  applyLockdownReadout();
+  showSecretPanel({
+    title: "Security Lockout",
+    tag: "status-dot / denied",
+    ascii: [
+      "██ SYSTEM LOCKDOWN ██",
+      "██ READ ONLY MODE  ██",
+      "██ PRIVATE DATA    ██",
+      "██ STAYS BLOCKED   ██"
+    ].join("\n"),
+    copy: "The access probe tripped the redaction wall. The board is now in a locked, sealed presentation state.",
+    hint: "Clear The Noise to restore the normal dashboard.",
+    variantClass: "mode-lockdown"
+  });
   showBanner("ACCESS DENIED // LOCKDOWN MODE", 2800);
   launchBadgeBurst(["DENIED", "LOCKDOWN", "REDACTED", "NO ACCESS"], ["red", "cyan", "red"]);
   triggerNoise("Access denied. Dashboard locked down.");
@@ -563,6 +626,7 @@ function renderFacts(summary) {
 
 function renderReport(data) {
   const { site, summary, alerts, privacy } = data;
+  currentReport = data;
 
   setStatus(site.overall_status);
   document.title = `${site.title} // Riot Edition`;

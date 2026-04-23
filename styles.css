@@ -75,6 +75,33 @@ body.mode-punk {
     linear-gradient(180deg, #07070e 0%, #12111b 48%, #09070f 100%);
 }
 
+body.mode-punk .page-shell {
+  animation: punk-rattle 680ms steps(2, end) infinite;
+  transform-origin: center;
+}
+
+body.mode-punk .hero-copy,
+body.mode-punk .hero-panel,
+body.mode-punk .metric-card,
+body.mode-punk .panel {
+  border-color: rgba(255, 68, 102, 0.24);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.56),
+    0 0 0 1px rgba(255, 68, 102, 0.05);
+}
+
+body.mode-punk .ambient-tag,
+body.mode-punk .noise-button,
+body.mode-punk .status-line {
+  border-color: rgba(255, 68, 102, 0.22);
+}
+
+body.mode-punk .glitch-title {
+  text-shadow:
+    -3px 0 rgba(255, 68, 102, 0.28),
+    3px 0 rgba(73, 247, 255, 0.22);
+}
+
 body.mode-konami {
   --accent: #ff7a00;
   --accent-2: #00ffc6;
@@ -98,9 +125,123 @@ body.mode-konami .hero-panel,
 body.mode-konami .metric-card,
 body.mode-konami .panel {
   border-color: rgba(100, 255, 162, 0.2);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(7, 20, 14, 0.96), rgba(3, 8, 6, 0.98));
   box-shadow:
     0 28px 80px rgba(0, 0, 0, 0.56),
     0 0 0 1px rgba(84, 255, 151, 0.04);
+}
+
+body.mode-konami .page-shell {
+  width: min(1320px, calc(100% - 2rem));
+}
+
+body.mode-konami .hero {
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 1rem;
+}
+
+body.mode-konami .metrics-grid {
+  grid-template-columns: 1.2fr 0.9fr 0.9fr;
+  grid-auto-rows: minmax(156px, auto);
+}
+
+body.mode-konami .metric-card {
+  min-height: 210px;
+  padding: 1.35rem;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(84, 255, 151, 0.04);
+}
+
+body.mode-konami .metric-card::before {
+  background:
+    linear-gradient(135deg, rgba(84, 255, 151, 0.08), transparent 30%),
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.015) 0 2px,
+      transparent 2px 5px
+    );
+}
+
+body.mode-konami .metric-card::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(84, 255, 151, 0.12);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+body.mode-konami .metric-card:nth-child(1) {
+  grid-column: span 2;
+  min-height: 250px;
+}
+
+body.mode-konami .metric-card:nth-child(4) {
+  grid-column: span 2;
+}
+
+body.mode-konami .metric-label,
+body.mode-konami .metric-sub,
+body.mode-konami .panel-tag,
+body.mode-konami .eyebrow,
+body.mode-konami .hero-kicker {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+body.mode-konami .metric-label {
+  color: #7dff9d;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+}
+
+body.mode-konami .metric-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  letter-spacing: -0.08em;
+  text-shadow:
+    0 0 18px rgba(84, 255, 151, 0.18),
+    0 0 2px rgba(0, 240, 255, 0.32);
+}
+
+body.mode-konami .metric-sub {
+  color: #98d7a8;
+}
+
+body.mode-konami .hero-kicker {
+  background: rgba(84, 255, 151, 0.08);
+  border-color: rgba(84, 255, 151, 0.2);
+  color: #b7ffc8;
+}
+
+body.mode-konami .panel-head h2,
+body.mode-konami .meta-grid dd {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+body.mode-konami .panel-head h2 {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 1.05rem;
+}
+
+body.mode-konami .detail-grid {
+  grid-template-columns: 1.15fr 0.85fr;
+}
+
+body.mode-konami .stacked-facts div {
+  padding: 0.9rem;
+  border: 1px solid rgba(84, 255, 151, 0.1);
+  border-radius: 14px;
+  background: rgba(84, 255, 151, 0.03);
+}
+
+body.mode-konami .panel-list li::before,
+body.mode-konami .privacy-list li::before {
+  content: ">>";
+  color: #7dff9d;
 }
 
 body.mode-konami .glitch-title {
@@ -146,6 +287,8 @@ body.mode-lockdown .hero-panel,
 body.mode-lockdown .metric-card,
 body.mode-lockdown .panel {
   border-color: rgba(255, 104, 125, 0.24);
+  background:
+    linear-gradient(180deg, rgba(14, 12, 17, 0.98), rgba(9, 10, 14, 0.98));
   filter: saturate(0.82);
 }
 
@@ -153,6 +296,121 @@ body.mode-lockdown .status-line,
 body.mode-lockdown .panel-tag {
   background: rgba(255, 104, 125, 0.1);
   color: #ffd4da;
+}
+
+body.mode-lockdown .page-shell::before {
+  content: "SYSTEM LOCKDOWN // READ ONLY";
+  position: fixed;
+  left: 50%;
+  top: 1rem;
+  transform: translateX(-50%);
+  z-index: 7;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid rgba(255, 104, 125, 0.26);
+  border-radius: 999px;
+  background: rgba(14, 12, 17, 0.96);
+  color: #ffd0d7;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.38);
+}
+
+body.mode-lockdown .hero-copy::after,
+body.mode-lockdown .hero-panel::after,
+body.mode-lockdown .metric-card::after,
+body.mode-lockdown .panel::after {
+  content: "RESTRICTED";
+  position: absolute;
+  top: 0.95rem;
+  right: -2.4rem;
+  padding: 0.22rem 2.8rem;
+  background: rgba(255, 104, 125, 0.16);
+  border-top: 1px solid rgba(255, 104, 125, 0.34);
+  border-bottom: 1px solid rgba(255, 104, 125, 0.34);
+  color: #ffd4da;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: rotate(28deg);
+  pointer-events: none;
+}
+
+body.mode-lockdown .lede,
+body.mode-lockdown .hint,
+body.mode-lockdown .metric-value,
+body.mode-lockdown .metric-sub,
+body.mode-lockdown .meta-grid dd,
+body.mode-lockdown .stacked-facts dd {
+  position: relative;
+  color: transparent !important;
+  text-shadow: none !important;
+  user-select: none;
+}
+
+body.mode-lockdown .lede::after,
+body.mode-lockdown .hint::after,
+body.mode-lockdown .metric-value::after,
+body.mode-lockdown .metric-sub::after,
+body.mode-lockdown .meta-grid dd::after,
+body.mode-lockdown .stacked-facts dd::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 0.95em;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(255, 104, 125, 0.92), rgba(255, 104, 125, 0.4));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+body.mode-lockdown .metric-value::after {
+  width: min(100%, 180px);
+}
+
+body.mode-lockdown .metric-sub::after,
+body.mode-lockdown .meta-grid dd::after,
+body.mode-lockdown .stacked-facts dd::after {
+  width: min(100%, 150px);
+}
+
+body.mode-lockdown .lede::after {
+  width: 100%;
+  height: 70%;
+  border-radius: 10px;
+}
+
+body.mode-lockdown .hint::after {
+  width: 100%;
+  height: 0.9em;
+}
+
+body.mode-lockdown .panel-list li,
+body.mode-lockdown .privacy-list li {
+  color: transparent;
+}
+
+body.mode-lockdown .panel-list li::before,
+body.mode-lockdown .privacy-list li::before {
+  content: "XX";
+  color: #ffd4da;
+}
+
+body.mode-lockdown .panel-list li::after,
+body.mode-lockdown .privacy-list li::after {
+  content: "";
+  position: absolute;
+  left: 1.35rem;
+  right: 0;
+  top: 0.35rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(255, 104, 125, 0.95), rgba(255, 104, 125, 0.42));
 }
 
 body.arcade-overdrive .metric-card,
@@ -874,6 +1132,17 @@ dd {
   color: #49f7ff;
 }
 
+.secret-panel.mode-lockdown {
+  border-color: rgba(255, 104, 125, 0.3);
+  background:
+    linear-gradient(145deg, rgba(255, 104, 125, 0.18), rgba(143, 195, 255, 0.08)),
+    linear-gradient(180deg, rgba(16, 12, 18, 0.98), rgba(8, 9, 14, 0.98));
+}
+
+.secret-panel.mode-lockdown .ascii-tag {
+  color: #ff9cab;
+}
+
 .secret-grid {
   display: grid;
   grid-template-columns: minmax(220px, 280px) 1fr;
@@ -1066,6 +1335,29 @@ dd {
   }
 }
 
+@keyframes punk-rattle {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  18% {
+    transform: translate(1px, -1px) rotate(0.12deg);
+  }
+
+  34% {
+    transform: translate(-1px, 1px) rotate(-0.12deg);
+  }
+
+  52% {
+    transform: translate(1px, 1px) rotate(0.08deg);
+  }
+
+  70% {
+    transform: translate(-1px, -1px) rotate(-0.08deg);
+  }
+}
+
 @keyframes panel-flash {
   0% {
     box-shadow: 0 0 0 rgba(0, 221, 255, 0);
@@ -1094,6 +1386,15 @@ dd {
 
   .secret-grid {
     grid-template-columns: 1fr;
+  }
+
+  body.mode-konami .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.mode-konami .metric-card:nth-child(1),
+  body.mode-konami .metric-card:nth-child(4) {
+    grid-column: span 1;
   }
 }
 
@@ -1127,6 +1428,10 @@ dd {
   }
 
   .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.mode-konami .metrics-grid {
     grid-template-columns: 1fr;
   }
 
