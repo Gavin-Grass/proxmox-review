@@ -1,41 +1,41 @@
 {
   "site": {
     "title": "Proxmox Review Board",
-    "generated_at": "2026-04-22T21:45:00Z",
+    "generated_at": "2026-04-23T06:06:38Z",
     "node_label": "lab-node-1",
     "privacy_mode": "sanitized-static-report",
     "overall_status": "warning"
   },
   "summary": {
-    "cpu_percent": 34,
+    "cpu_percent": 0,
     "cpu_cores": 8,
-    "load": [1.18, 0.92, 0.77],
-    "uptime": "12d 4h 13m",
+    "load": [0.02, 0.06, 0.01],
+    "uptime": "56d 4h 29m",
     "memory": {
-      "used_bytes": 6871947673,
-      "total_bytes": 17179869184,
-      "used_percent": 40
+      "used_bytes": 5084368896,
+      "total_bytes": 33486721024,
+      "used_percent": 15
     },
     "swap": {
       "enabled": true,
-      "used_bytes": 268435456,
-      "total_bytes": 2147483648,
-      "used_percent": 12
+      "used_bytes": 0,
+      "total_bytes": 8589930496,
+      "used_percent": 0
     },
     "root_fs": {
-      "used_bytes": 18253611008,
-      "total_bytes": 53687091200,
-      "available_bytes": 35433480192,
-      "used_percent": 34
+      "used_bytes": 6004817920,
+      "total_bytes": 72722055168,
+      "available_bytes": 62976339968,
+      "used_percent": 9
     },
     "filesystems_above_threshold": 1,
     "virtual_machines": {
-      "running": 3,
-      "total": 4
+      "running": 0,
+      "total": 0
     },
     "containers": {
-      "running": 2,
-      "total": 2
+      "running": 3,
+      "total": 3
     },
     "zfs": {
       "unhealthy": 0,
@@ -55,4 +55,3 @@
     "Storage and ZFS data are summarized without revealing pool names or datastore names."
   ]
 }
-
