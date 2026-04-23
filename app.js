@@ -5,8 +5,15 @@ const els = {
   heroTitle: document.querySelector("#heroTitle"),
   noiseButton: document.querySelector("#noiseButton"),
   fxLayer: document.querySelector("#fxLayer"),
+  matrixField: document.querySelector("#matrixField"),
   riotBanner: document.querySelector("#riotBanner"),
   riotBannerText: document.querySelector("#riotBannerText"),
+  matrixSplash: document.querySelector("#matrixSplash"),
+  matrixSplashTitle: document.querySelector("#matrixSplashTitle"),
+  matrixSplashCopy: document.querySelector("#matrixSplashCopy"),
+  terminalWindow: document.querySelector("#terminalWindow"),
+  terminalState: document.querySelector("#terminalState"),
+  terminalOutput: document.querySelector("#terminalOutput"),
   statusDot: document.querySelector("#statusDot"),
   overallStatus: document.querySelector("#overallStatus"),
   nodeLabel: document.querySelector("#nodeLabel"),
@@ -53,65 +60,43 @@ const konamiCode = [
   "a"
 ];
 
-const easterEggs = {
-  punk: {
-    className: "mode-punk",
-    title: "Punk Patch Loaded",
-    tag: "typed: punk",
-    ascii: [
-      " .----------------. ",
-      " | PUNK PATCH 01  | ",
-      " | NO SNITCH DATA | ",
-      " '----------------' "
-    ].join("\n"),
-    copy: "Same sanitized numbers, louder paint job. This is the class-demo flex version of the board.",
-    hint: "You found the hidden word trigger. There is still one more cheat code hanging around."
-  },
-  dot: {
-    className: "",
-    title: "Status Dot Spill",
-    tag: "clicked: dot",
-    ascii: [
-      " .------------. ",
-      " |  o  o  o   | ",
-      " | backstage  | ",
-      " | diagnostic | ",
-      " '------------' "
-    ].join("\n"),
-    copy: "That tiny light runs a fake backstage diagnostic because boring dashboards deserve consequences.",
-    hint: "Rapid-click the status dot to pop this panel again during class."
-  },
-  konami: {
-    className: "mode-konami",
-    title: "Cheat Code Accepted",
-    tag: "konami combo",
-    ascii: [
-      " .--------------------. ",
-      " | UP UP DOWN DOWN    | ",
-      " | LEFT RIGHT LEFT    | ",
-      " | RIGHT B A          | ",
-      " '--------------------' "
-    ].join("\n"),
-    copy: "Classic code, absurd reward. The board flips into full glitch-show mode without exposing a single private detail.",
-    hint: "This one is excellent for the live demo. Hit the lights after it unlocks."
-  }
-};
-
+const modeClasses = ["mode-punk", "mode-konami", "mode-lockdown", "arcade-overdrive"];
+const matrixChars = "01#$%&*+-=<>[]{}ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+const defaultMetricLabels = els.metricLabels.map((node) => node.textContent);
+
+let activeMode = null;
 let toastTimer = 0;
-let scanTimer = 0;
+let bannerTimer = 0;
 let glitchTimer = 0;
+let scanTimer = 0;
+let glitchLoop = 0;
+let bannerHideTimer = 0;
+let matrixSplashHideTimer = 0;
+let terminalHideTimer = 0;
 let dotClicks = 0;
 let dotTimer = 0;
 let keyBuffer = "";
 let konamiIndex = 0;
-let bannerTimer = 0;
-let chaosTimer = 0;
-let relabelTimer = 0;
-let secretSequenceRun = 0;
+let scheduledEffects = [];
 
-const defaultMetricLabels = els.metricLabels.map((node) => node.textContent);
+function scheduleEffect(fn, delay) {
+  const id = window.setTimeout(() => {
+    scheduledEffects = scheduledEffects.filter((value) => value !== id);
+    fn();
+  }, delay);
+
+  scheduledEffects.push(id);
+  return id;
+}
+
+function clearScheduledEffects() {
+  scheduledEffects.forEach((id) => {
+    window.clearTimeout(id);
+  });
+  scheduledEffects = [];
+}
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) {
@@ -180,33 +165,47 @@ function renderList(target, items) {
 function showToast(message) {
   els.toast.textContent = message;
   els.toast.classList.add("is-visible");
-  clearTimeout(toastTimer);
+  window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => {
     els.toast.classList.remove("is-visible");
   }, 2200);
 }
 
 function showBanner(text, duration = 2300) {
+  window.clearTimeout(bannerHideTimer);
   els.riotBanner.hidden = false;
   els.riotBanner.setAttribute("aria-hidden", "false");
   els.riotBannerText.textContent = text;
   els.riotBanner.classList.add("is-live");
 
-  clearTimeout(bannerTimer);
+  window.clearTimeout(bannerTimer);
   bannerTimer = window.setTimeout(() => {
-    els.riotBanner.classList.remove("is-live");
-    window.setTimeout(() => {
-      els.riotBanner.hidden = true;
-      els.riotBanner.setAttribute("aria-hidden", "true");
-    }, 260);
+    hideBanner();
   }, duration);
+}
+
+function hideBanner(immediate = false) {
+  window.clearTimeout(bannerTimer);
+  window.clearTimeout(bannerHideTimer);
+  els.riotBanner.classList.remove("is-live");
+
+  if (immediate) {
+    els.riotBanner.hidden = true;
+    els.riotBanner.setAttribute("aria-hidden", "true");
+    return;
+  }
+
+  bannerHideTimer = window.setTimeout(() => {
+    els.riotBanner.hidden = true;
+    els.riotBanner.setAttribute("aria-hidden", "true");
+  }, 260);
 }
 
 function triggerGlitch() {
   els.heroTitle.classList.remove("is-glitching");
   void els.heroTitle.offsetWidth;
   els.heroTitle.classList.add("is-glitching");
-  clearTimeout(glitchTimer);
+  window.clearTimeout(glitchTimer);
   glitchTimer = window.setTimeout(() => {
     els.heroTitle.classList.remove("is-glitching");
   }, 900);
@@ -216,7 +215,7 @@ function triggerNoise(message = "Board lights kicked.") {
   els.body.classList.remove("riot-scan");
   void els.body.offsetWidth;
   els.body.classList.add("riot-scan");
-  clearTimeout(scanTimer);
+  window.clearTimeout(scanTimer);
   scanTimer = window.setTimeout(() => {
     els.body.classList.remove("riot-scan");
   }, 1100);
@@ -228,6 +227,12 @@ function flashSecretPanel() {
   els.secretPanel.classList.remove("flash");
   void els.secretPanel.offsetWidth;
   els.secretPanel.classList.add("flash");
+}
+
+function setMetricLabels(labels = defaultMetricLabels) {
+  els.metricLabels.forEach((node, index) => {
+    node.textContent = labels[index] || defaultMetricLabels[index];
+  });
 }
 
 function spawnBadge(text, variant = "cyan") {
@@ -244,154 +249,282 @@ function spawnBadge(text, variant = "cyan") {
   badge.style.setProperty("--burst-y", `${-110 - Math.random() * 90}px`);
   badge.style.setProperty("--burst-rotate", `${-14 + Math.random() * 28}deg`);
   els.fxLayer.appendChild(badge);
-  window.setTimeout(() => {
+
+  scheduleEffect(() => {
     badge.remove();
   }, 2500);
 }
 
 function launchBadgeBurst(words, variants = ["cyan", "lime", "red"]) {
   words.forEach((word, index) => {
-    window.setTimeout(() => {
+    scheduleEffect(() => {
       spawnBadge(word, variants[index % variants.length]);
     }, index * 90);
   });
 }
 
+function pulseChaos(duration = 4200) {
+  els.body.classList.add("arcade-overdrive");
+  scheduleEffect(() => {
+    els.body.classList.remove("arcade-overdrive");
+  }, duration);
+}
+
+function randomMatrixColumn(lines = 28) {
+  let output = "";
+
+  for (let index = 0; index < lines; index += 1) {
+    output += `${matrixChars[Math.floor(Math.random() * matrixChars.length)]}\n`;
+  }
+
+  return output;
+}
+
+function buildMatrixField() {
+  els.matrixField.innerHTML = "";
+
+  for (let index = 0; index < 18; index += 1) {
+    const column = document.createElement("span");
+    column.className = "matrix-column";
+    column.textContent = randomMatrixColumn(30 + Math.floor(Math.random() * 12));
+    column.style.left = `${index * 5.6 + Math.random() * 2}%`;
+    column.style.opacity = `${0.42 + Math.random() * 0.45}`;
+    column.style.fontSize = `${0.68 + Math.random() * 0.25}rem`;
+    column.style.setProperty("--fall-duration", `${9 + Math.random() * 8}s`);
+    column.style.setProperty("--fall-delay", `${-Math.random() * 12}s`);
+    els.matrixField.appendChild(column);
+  }
+
+  els.matrixField.classList.add("is-live");
+}
+
+function clearMatrixField() {
+  els.matrixField.classList.remove("is-live");
+  els.matrixField.innerHTML = "";
+}
+
+function showMatrixSplash(title, copy, duration = 2100) {
+  window.clearTimeout(matrixSplashHideTimer);
+  els.matrixSplashTitle.textContent = title;
+  els.matrixSplashCopy.textContent = copy;
+  els.matrixSplash.hidden = false;
+  els.matrixSplash.setAttribute("aria-hidden", "false");
+  els.matrixSplash.classList.add("is-live");
+
+  scheduleEffect(() => {
+    hideMatrixSplash();
+  }, duration);
+}
+
+function hideMatrixSplash(immediate = false) {
+  window.clearTimeout(matrixSplashHideTimer);
+  els.matrixSplash.classList.remove("is-live");
+
+  if (immediate) {
+    els.matrixSplash.hidden = true;
+    els.matrixSplash.setAttribute("aria-hidden", "true");
+    return;
+  }
+
+  matrixSplashHideTimer = window.setTimeout(() => {
+    els.matrixSplash.hidden = true;
+    els.matrixSplash.setAttribute("aria-hidden", "true");
+  }, 260);
+}
+
+function showTerminalWindow() {
+  window.clearTimeout(terminalHideTimer);
+  els.terminalWindow.hidden = false;
+  els.terminalWindow.setAttribute("aria-hidden", "false");
+  els.terminalWindow.classList.add("is-live");
+}
+
+function hideTerminalWindow(immediate = false) {
+  window.clearTimeout(terminalHideTimer);
+  els.terminalWindow.classList.remove("is-live");
+  els.terminalWindow.classList.remove("is-denied");
+
+  if (immediate) {
+    els.terminalWindow.hidden = true;
+    els.terminalWindow.setAttribute("aria-hidden", "true");
+    return;
+  }
+
+  terminalHideTimer = window.setTimeout(() => {
+    els.terminalWindow.hidden = true;
+    els.terminalWindow.setAttribute("aria-hidden", "true");
+  }, 260);
+}
+
+function appendTerminalLine(text) {
+  const next = els.terminalOutput.textContent ? `${els.terminalOutput.textContent}\n${text}` : text;
+  els.terminalOutput.textContent = next;
+  els.terminalOutput.scrollTop = els.terminalOutput.scrollHeight;
+}
+
+function showSecretPanel({ title, tag, ascii, copy, hint, variantClass = "" }) {
+  els.secretPanel.hidden = false;
+  els.secretPanel.setAttribute("aria-hidden", "false");
+  els.secretPanel.classList.remove("mode-punk");
+
+  if (variantClass) {
+    els.secretPanel.classList.add(variantClass);
+  }
+
+  els.secretTitle.textContent = title;
+  els.secretTag.textContent = tag;
+  els.secretAscii.textContent = ascii;
+  els.secretCopy.textContent = copy;
+  els.secretHint.textContent = hint;
+  flashSecretPanel();
+}
+
+function hideSecretPanel() {
+  els.secretPanel.hidden = true;
+  els.secretPanel.setAttribute("aria-hidden", "true");
+  els.secretPanel.classList.remove("mode-punk");
+}
+
+function clearModeVisuals() {
+  els.body.classList.remove(...modeClasses, "riot-scan");
+  clearMatrixField();
+  hideMatrixSplash(true);
+  hideTerminalWindow(true);
+  hideBanner(true);
+  hideSecretPanel();
+  setMetricLabels(defaultMetricLabels);
+  els.fxLayer.innerHTML = "";
+  els.terminalOutput.textContent = "";
+  els.terminalState.textContent = "idle";
+}
+
+function stopLoops() {
+  if (glitchLoop) {
+    window.clearInterval(glitchLoop);
+    glitchLoop = 0;
+  }
+}
+
+function clearActiveMode(options = {}) {
+  const { announce = false, message = "Noise cleared. Default board restored." } = options;
+
+  activeMode = null;
+  dotClicks = 0;
+  keyBuffer = "";
+  konamiIndex = 0;
+  clearScheduledEffects();
+  stopLoops();
+  clearModeVisuals();
+  if (announce) {
+    triggerNoise(message);
+  }
+}
+
 function runTitleRiff(count = 3, spacing = 180) {
   for (let index = 0; index < count; index += 1) {
-    window.setTimeout(() => {
+    scheduleEffect(() => {
       triggerGlitch();
     }, index * spacing);
   }
 }
 
-function pulseChaos(duration = 4200) {
-  els.body.classList.add("arcade-overdrive");
-  clearTimeout(chaosTimer);
-  chaosTimer = window.setTimeout(() => {
-    els.body.classList.remove("arcade-overdrive");
-  }, duration);
+function startKonamiLoop() {
+  stopLoops();
+  glitchLoop = window.setInterval(() => {
+    triggerGlitch();
+  }, 1700);
 }
 
-function temporaryRelabel(labels, duration = 3800) {
-  els.metricLabels.forEach((node, index) => {
-    node.textContent = labels[index] || defaultMetricLabels[index];
+function activatePunkMode() {
+  clearActiveMode();
+  activeMode = "punk";
+  els.body.classList.add("mode-punk");
+  setMetricLabels(["CPU Riot", "RAM Wreck", "Disk Noise", "Guest Mob"]);
+  showSecretPanel({
+    title: "Punk Patch Loaded",
+    tag: "typed: punk",
+    ascii: [
+      " .----------------. ",
+      " | PUNK PATCH 01  | ",
+      " | NO SNITCH DATA | ",
+      " '----------------' "
+    ].join("\n"),
+    copy: "The board keeps the same sanitized report, but the whole presentation kicks over into loud demo mode.",
+    hint: "This one stays active until you clear the noise or trigger another hidden mode.",
+    variantClass: "mode-punk"
   });
-
-  clearTimeout(relabelTimer);
-  relabelTimer = window.setTimeout(() => {
-    els.metricLabels.forEach((node, index) => {
-      node.textContent = defaultMetricLabels[index];
-    });
-  }, duration);
+  showBanner("PUNK MODE // PRIVATE DATA STAYS BURIED", 2800);
+  launchBadgeBurst(["PUNK PATCH", "SAFE FLEX", "NO NAMES", "NO IPS", "LOUD BOARD"]);
+  pulseChaos(2400);
+  runTitleRiff(4, 150);
+  triggerNoise("Punk mode locked in.");
 }
 
-function playDotDiagnosticSequence() {
-  secretSequenceRun += 1;
-  const runId = secretSequenceRun;
+function activateKonamiMode() {
+  clearActiveMode();
+  activeMode = "konami";
+  els.body.classList.add("mode-konami");
+  setMetricLabels(["Boss Fight", "Combo Meter", "Loot Crate", "Crew Size"]);
+  buildMatrixField();
+  showMatrixSplash(
+    "GLITCH / MATRIX MODE",
+    "Matrix rain engaged. The whole board stays in cheat-code mode until you clear it."
+  );
+  showBanner("KONAMI MODE // DEMO CHAOS ENABLED", 3200);
+  launchBadgeBurst(
+    ["1UP", "COMBO", "GLITCH", "BOSS MODE", "SAFE DATA", "ARCADE"],
+    ["lime", "red", "cyan"]
+  );
+  pulseChaos(5200);
+  runTitleRiff(6, 120);
+  startKonamiLoop();
+  triggerNoise("Konami mode engaged.");
+}
 
-  const frames = [
-    {
-      ascii: [
-        "> booting backstage check",
-        "> scanning for hostname leaks",
-        "> scanning for IP leaks",
-        "> scanning for guest-name leaks"
-      ].join("\n"),
-      copy: "Backstage scan started. Fake terminal energy, real privacy rules.",
-      hint: "Stage one: look for anything that would embarrass the repo in public."
-    },
-    {
-      ascii: [
-        "[ok] hostname leak: blocked",
-        "[ok] IP leak: blocked",
-        "[ok] guest-name leak: blocked",
-        "[??] vibe level: unstable cool"
-      ].join("\n"),
-      copy: "The board checked for snitch data and came back empty-handed.",
-      hint: "Stage two: the machine remains dramatic but legally boring."
-    },
-    {
-      ascii: [
-        "ACCESS: DENIED",
-        "LOG NOISE: ACCEPTED",
-        "CLASS FLEX: ENABLED",
-        "SHOWTIME: READY"
-      ].join("\n"),
-      copy: "Diagnostic complete. Nothing private escaped, but the theatrics definitely did.",
-      hint: "This is the one to spam in front of the class if you want the fastest payoff."
-    }
+function activateLockdownTheme() {
+  activeMode = "lockdown";
+  els.body.classList.add("mode-lockdown");
+  setMetricLabels(["CPU Seal", "RAM Seal", "Disk Seal", "Guest Seal"]);
+  showBanner("ACCESS DENIED // LOCKDOWN MODE", 2800);
+  launchBadgeBurst(["DENIED", "LOCKDOWN", "REDACTED", "NO ACCESS"], ["red", "cyan", "red"]);
+  triggerNoise("Access denied. Dashboard locked down.");
+}
+
+function runLockdownSequence() {
+  clearActiveMode();
+  showTerminalWindow();
+  els.terminalOutput.textContent = "";
+  els.terminalState.textContent = "probing";
+  els.terminalWindow.classList.remove("is-denied");
+
+  const steps = [
+    { state: "boot", text: "> ./access_probe.exe --scope public_repo --mode escalate" },
+    { state: "boot", text: "[init] loading readonly telemetry map" },
+    { state: "probe", text: "[probe] enumerating public dashboard surface" },
+    { state: "probe", text: "[probe] checking vm-count cache boundary" },
+    { state: "probe", text: "[probe] testing storage summary token" },
+    { state: "escalating", text: "[auth] privilege elevation request queued" },
+    { state: "escalating", text: "[auth] shadow session handshake -> partial" },
+    { state: "escalating", text: "[auth] disclosure wall detected" },
+    { state: "denied", text: "[shield] private identifier redaction layer tripped" },
+    { state: "denied", text: "[policy] outbound leak risk -> blocked" },
+    { state: "denied", text: "[halt] ACCESS DENIED // lockdown engaged" }
   ];
 
-  frames.forEach((frame, index) => {
-    window.setTimeout(() => {
-      if (runId !== secretSequenceRun) {
-        return;
+  steps.forEach((step, index) => {
+    scheduleEffect(() => {
+      els.terminalState.textContent = step.state;
+      if (step.state === "denied") {
+        els.terminalWindow.classList.add("is-denied");
       }
-
-      els.secretAscii.textContent = frame.ascii;
-      els.secretCopy.textContent = frame.copy;
-      els.secretHint.textContent = frame.hint;
-      flashSecretPanel();
-    }, index * 760);
+      appendTerminalLine(step.text);
+    }, index * 250);
   });
-}
 
-function runEggEffects(kind) {
-  if (kind === "punk") {
-    showBanner("PUNK MODE // PRIVATE DATA STAYS BURIED", 2600);
-    temporaryRelabel(["CPU Riot", "RAM Wreck", "Disk Noise", "Guest Mob"], 4600);
-    launchBadgeBurst(["PUNK PATCH", "SAFE FLEX", "NO NAMES", "NO IPS", "LOUD BOARD"]);
-    runTitleRiff(4, 150);
-    pulseChaos(2400);
-    return;
-  }
-
-  if (kind === "dot") {
-    showBanner("BACKSTAGE DIAGNOSTIC // ACCESS DENIED", 2200);
-    launchBadgeBurst(["DENIED", "SAFE", "CHECK", "CLEAN"], ["red", "cyan", "lime"]);
-    playDotDiagnosticSequence();
-    return;
-  }
-
-  if (kind === "konami") {
-    showBanner("KONAMI MODE // DEMO CHAOS ENABLED", 3200);
-    temporaryRelabel(["Boss Fight", "Combo Meter", "Loot Crate", "Crew Size"], 5200);
-    launchBadgeBurst(
-      ["1UP", "COMBO", "GLITCH", "BOSS MODE", "SAFE DATA", "ARCADE"],
-      ["lime", "red", "cyan"]
-    );
-    runTitleRiff(6, 130);
-    pulseChaos(5600);
-  }
-}
-
-function revealSecret(kind) {
-  const egg = easterEggs[kind];
-
-  if (!egg) {
-    return;
-  }
-
-  if (egg.className) {
-    els.body.classList.add(egg.className);
-  }
-
-  els.secretPanel.hidden = false;
-  els.secretPanel.setAttribute("aria-hidden", "false");
-  els.secretTitle.textContent = egg.title;
-  els.secretTag.textContent = egg.tag;
-  els.secretAscii.textContent = egg.ascii;
-  els.secretCopy.textContent = egg.copy;
-  els.secretHint.textContent = egg.hint;
-
-  triggerNoise(`${egg.title} unlocked.`);
-  flashSecretPanel();
-  runEggEffects(kind);
-
-  if (!motionQuery.matches) {
-    els.secretPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
+  scheduleEffect(() => {
+    hideTerminalWindow();
+    activateLockdownTheme();
+  }, steps.length * 250 + 1150);
 }
 
 function stylizeAlerts(alerts) {
@@ -496,17 +629,18 @@ function setupTilt(card) {
 function handleKeydown(event) {
   const normalizedKey = event.key.length === 1 ? event.key.toLowerCase() : event.key;
 
-  keyBuffer = `${keyBuffer}${normalizedKey}`.slice(-16);
+  keyBuffer = `${keyBuffer}${normalizedKey}`.slice(-20);
   if (keyBuffer.includes("punk")) {
     keyBuffer = "";
-    revealSecret("punk");
+    activatePunkMode();
+    return;
   }
 
   if (normalizedKey === konamiCode[konamiIndex]) {
     konamiIndex += 1;
     if (konamiIndex === konamiCode.length) {
       konamiIndex = 0;
-      revealSecret("konami");
+      activateKonamiMode();
     }
   } else {
     konamiIndex = normalizedKey === konamiCode[0] ? 1 : 0;
@@ -515,21 +649,25 @@ function handleKeydown(event) {
 
 function handleStatusDotClick() {
   dotClicks += 1;
-  clearTimeout(dotTimer);
+  window.clearTimeout(dotTimer);
   dotTimer = window.setTimeout(() => {
     dotClicks = 0;
   }, 900);
 
   if (dotClicks >= 5) {
     dotClicks = 0;
-    revealSecret("dot");
+    runLockdownSequence();
   }
 }
 
 function setupInteractions() {
   els.tiltCards.forEach(setupTilt);
   els.noiseButton.addEventListener("click", () => {
-    triggerNoise("Lights kicked. Board still sanitized.");
+    const hadMode = activeMode !== null;
+    clearActiveMode({
+      announce: true,
+      message: hadMode ? "Noise cleared. Default board restored." : "Board already clean. No hidden mode active."
+    });
   });
   els.heroTitle.addEventListener("click", triggerGlitch);
   els.statusDot.addEventListener("click", handleStatusDotClick);

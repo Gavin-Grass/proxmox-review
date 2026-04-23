@@ -18,8 +18,23 @@
   </head>
   <body>
     <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+    <div class="matrix-field" id="matrixField" aria-hidden="true"></div>
     <div class="riot-banner" id="riotBanner" hidden aria-hidden="true">
       <span id="riotBannerText"></span>
+    </div>
+    <div class="matrix-splash" id="matrixSplash" hidden aria-hidden="true">
+      <div class="matrix-splash__panel">
+        <p class="matrix-splash__eyebrow">cheat code accepted</p>
+        <h2 id="matrixSplashTitle">Matrix Riot Mode</h2>
+        <p id="matrixSplashCopy">Theme rewrite engaged.</p>
+      </div>
+    </div>
+    <div class="terminal-window" id="terminalWindow" hidden aria-hidden="true">
+      <div class="terminal-window__head">
+        <span class="terminal-window__title">access_probe.exe</span>
+        <span class="terminal-window__state" id="terminalState">idle</span>
+      </div>
+      <pre class="terminal-window__body" id="terminalOutput"></pre>
     </div>
 
     <div class="ambient-tags" aria-hidden="true">
@@ -39,8 +54,8 @@
             node name, IPs, guest names, or any other identifying scraps.
           </p>
           <div class="hero-actions">
-            <button class="noise-button" id="noiseButton" type="button">Kick The Lights</button>
-            <p class="hint">There are hidden tricks in here. The board is not volunteering them.</p>
+            <button class="noise-button" id="noiseButton" type="button">Clear The Noise</button>
+            <p class="hint">Hidden triggers can flip the whole board. This button wipes the active mode.</p>
           </div>
         </div>
 
