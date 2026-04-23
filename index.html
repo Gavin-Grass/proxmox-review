@@ -3,109 +3,139 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Proxmox Review Board</title>
+    <title>Proxmox Review Board // Riot Edition</title>
     <meta
       name="description"
-      content="A static, privacy-safe status board for sanitized Proxmox performance reports."
+      content="A dark, privacy-safe status board for sanitized Proxmox performance reports with a louder punk-style presentation."
     >
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap"
       rel="stylesheet"
     >
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
+    <div class="ambient-tags" aria-hidden="true">
+      <span class="ambient-tag ambient-tag--left">public-safe</span>
+      <span class="ambient-tag ambient-tag--right">riot edition</span>
+      <span class="ambient-tag ambient-tag--bottom">no hostnames</span>
+    </div>
+
     <div class="page-shell">
       <header class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Static GitHub Repo Dashboard</p>
-          <h1>Proxmox Review Board</h1>
+        <div class="hero-copy" data-tilt>
+          <p class="eyebrow">Public Repo // Sanitized Telemetry // No Snitch Data</p>
+          <p class="hero-kicker">Riot Edition</p>
+          <h1 class="glitch-title" id="heroTitle" data-text="Proxmox Review Board">Proxmox Review Board</h1>
           <p class="lede">
-            Sanitized infrastructure reporting for class demos and public repos.
-            The page shows summary health data only, with no hostnames, IPs, or guest names.
+            Loud numbers, clean privacy. This board shows the server heat without leaking the
+            node name, IPs, guest names, or any other identifying scraps.
           </p>
+          <div class="hero-actions">
+            <button class="noise-button" id="noiseButton" type="button">Kick The Lights</button>
+            <p class="hint">There are hidden tricks in here. The board is not volunteering them.</p>
+          </div>
         </div>
 
-        <div class="hero-panel">
-          <div class="status-line">
+        <div class="hero-panel" data-tilt>
+          <div class="status-line" id="statusLine">
             <span class="status-dot" id="statusDot"></span>
             <span id="overallStatus">Loading</span>
           </div>
           <dl class="meta-grid">
             <div>
-              <dt>Node Label</dt>
+              <dt>Node Alias</dt>
               <dd id="nodeLabel">...</dd>
             </div>
             <div>
-              <dt>Last Update</dt>
+              <dt>Last Riot</dt>
               <dd id="generatedAt">...</dd>
             </div>
             <div>
-              <dt>Privacy Mode</dt>
+              <dt>Privacy Shield</dt>
               <dd id="privacyMode">...</dd>
             </div>
           </dl>
+          <div class="tape-note">
+            <p>Safe for class demos.</p>
+            <p>Unsafe for boring slides.</p>
+          </div>
         </div>
       </header>
 
       <main class="board">
         <section class="metrics-grid" aria-label="Health Summary">
-          <article class="metric-card metric-card--accent">
-            <p class="metric-label">CPU</p>
+          <article class="metric-card metric-card--accent" data-tilt>
+            <p class="metric-label">CPU Heat</p>
             <p class="metric-value" id="cpuMetric">--</p>
             <p class="metric-sub" id="loadMetric">Load --</p>
           </article>
 
-          <article class="metric-card">
-            <p class="metric-label">Memory</p>
+          <article class="metric-card" data-tilt>
+            <p class="metric-label">RAM Drama</p>
             <p class="metric-value" id="memoryMetric">--</p>
             <p class="metric-sub" id="memoryDetail">--</p>
           </article>
 
-          <article class="metric-card">
-            <p class="metric-label">Storage</p>
+          <article class="metric-card" data-tilt>
+            <p class="metric-label">Disk Chaos</p>
             <p class="metric-value" id="storageMetric">--</p>
             <p class="metric-sub" id="storageDetail">--</p>
           </article>
 
-          <article class="metric-card">
-            <p class="metric-label">Guests</p>
+          <article class="metric-card" data-tilt>
+            <p class="metric-label">Guest Crew</p>
             <p class="metric-value" id="guestMetric">--</p>
             <p class="metric-sub" id="guestDetail">--</p>
           </article>
         </section>
 
         <section class="detail-grid">
-          <article class="panel">
+          <article class="panel" data-tilt>
             <div class="panel-head">
-              <h2>Alerts</h2>
-              <span class="panel-tag">threshold view</span>
+              <h2>Heat Check</h2>
+              <span class="panel-tag">watch list</span>
             </div>
             <ul class="panel-list" id="alertList"></ul>
           </article>
 
-          <article class="panel">
+          <article class="panel" data-tilt>
             <div class="panel-head">
-              <h2>System Notes</h2>
-              <span class="panel-tag">summary</span>
+              <h2>Back Alley Stats</h2>
+              <span class="panel-tag">summary dump</span>
             </div>
             <dl class="stacked-facts" id="systemFacts"></dl>
           </article>
 
-          <article class="panel panel--wide">
+          <article class="panel panel--wide" data-tilt>
             <div class="panel-head">
-              <h2>Privacy Guardrails</h2>
+              <h2>No-Snitch Rules</h2>
               <span class="panel-tag">public-safe</span>
             </div>
             <ul class="privacy-list" id="privacyList"></ul>
+          </article>
+
+          <article class="panel panel--wide secret-panel" id="secretPanel" hidden aria-hidden="true">
+            <div class="panel-head">
+              <h2 id="secretTitle">Hidden Tape Deck</h2>
+              <span class="panel-tag" id="secretTag">easter egg</span>
+            </div>
+            <div class="secret-grid">
+              <pre class="ascii-tag" id="secretAscii"></pre>
+              <div>
+                <p class="secret-copy" id="secretCopy"></p>
+                <p class="secret-copy secret-copy--muted" id="secretHint"></p>
+              </div>
+            </div>
           </article>
         </section>
       </main>
     </div>
 
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <script src="./app.js"></script>
   </body>
 </html>
-
