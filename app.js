@@ -14,6 +14,10 @@ const els = {
   terminalWindow: document.querySelector("#terminalWindow"),
   terminalState: document.querySelector("#terminalState"),
   terminalOutput: document.querySelector("#terminalOutput"),
+  presenterVault: document.querySelector("#presenterVault"),
+  presenterVaultBackdrop: document.querySelector("#presenterVaultBackdrop"),
+  presenterClose: document.querySelector("#presenterClose"),
+  presenterGrid: document.querySelector("#presenterGrid"),
   statusDot: document.querySelector("#statusDot"),
   overallStatus: document.querySelector("#overallStatus"),
   nodeLabel: document.querySelector("#nodeLabel"),
@@ -38,7 +42,8 @@ const els = {
   secretHint: document.querySelector("#secretHint"),
   toast: document.querySelector("#toast"),
   tiltCards: [...document.querySelectorAll("[data-tilt]")],
-  metricLabels: [...document.querySelectorAll(".metric-label")]
+  metricLabels: [...document.querySelectorAll(".metric-label")],
+  tapeNote: document.querySelector(".tape-note")
 };
 
 const statusLabels = {
@@ -63,6 +68,72 @@ const konamiCode = [
 const modeClasses = ["mode-punk", "mode-konami", "mode-lockdown", "arcade-overdrive"];
 const matrixChars = "01#$%&*+-=<>[]{}ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const speakerNotes = [
+  {
+    title: "1. Setup",
+    points: [
+      "Uses Bash and strict error handling.",
+      "Defines default paths for the env file and systemd units.",
+      "Fails fast instead of limping through a broken install."
+    ]
+  },
+  {
+    title: "2. Helpers",
+    points: [
+      "Small helper functions keep the main flow clean.",
+      "One function checks commands, another safely updates the env file.",
+      "Template rendering fills in the real env path and timer interval."
+    ]
+  },
+  {
+    title: "3. Inputs",
+    points: [
+      "Reads command options like custom interval, repo path, or git identity.",
+      "That makes the installer reusable without editing the script.",
+      "Defaults still work if no options are passed."
+    ]
+  },
+  {
+    title: "4. Safety Checks",
+    points: [
+      "Requires root because it writes into /etc and /usr/local/bin.",
+      "Verifies git, sed, install, and systemctl exist.",
+      "Also confirms the repo has the scripts and templates it needs."
+    ]
+  },
+  {
+    title: "5. Config Build",
+    points: [
+      "Creates the real server-only env file if needed.",
+      "Updates values like repo path, branch, interval, and git author.",
+      "Keeps private config on Proxmox instead of in GitHub."
+    ]
+  },
+  {
+    title: "6. Automation",
+    points: [
+      "Installs the sync script into /usr/local/bin.",
+      "Builds real systemd service and timer files from templates.",
+      "Uses systemd because cron cannot run every 30 seconds."
+    ]
+  },
+  {
+    title: "7. Finish",
+    points: [
+      "Reloads systemd so it sees the new unit files.",
+      "Starts the timer and can also run one sync immediately.",
+      "Prints status commands so the user can verify it worked."
+    ]
+  },
+  {
+    title: "Say This",
+    points: [
+      "This script turns a manual Proxmox setup into one command.",
+      "It builds the private config, installs the auto-sync timer, and starts it.",
+      "The result is a public-safe dashboard that updates itself."
+    ]
+  }
+];
 
 const defaultMetricLabels = els.metricLabels.map((node) => node.textContent);
 
@@ -80,6 +151,8 @@ let dotClicks = 0;
 let dotTimer = 0;
 let keyBuffer = "";
 let konamiIndex = 0;
+let tapeClicks = 0;
+let tapeClickTimer = 0;
 let scheduledEffects = [];
 
 function scheduleEffect(fn, delay) {
@@ -338,6 +411,46 @@ function showTerminalWindow() {
   els.terminalWindow.hidden = false;
   els.terminalWindow.setAttribute("aria-hidden", "false");
   els.terminalWindow.classList.add("is-live");
+}
+
+function renderPresenterNotes() {
+  if (els.presenterGrid.childElementCount > 0) {
+    return;
+  }
+
+  speakerNotes.forEach((section, index) => {
+    const card = document.createElement("article");
+    card.className = "presenter-card";
+    card.style.setProperty("--note-order", String(index));
+
+    const title = document.createElement("h3");
+    title.textContent = section.title;
+
+    const list = document.createElement("ul");
+    section.points.forEach((point) => {
+      const item = document.createElement("li");
+      item.textContent = point;
+      list.appendChild(item);
+    });
+
+    card.append(title, list);
+    els.presenterGrid.appendChild(card);
+  });
+}
+
+function openPresenterVault() {
+  renderPresenterNotes();
+  els.presenterVault.hidden = false;
+  els.presenterVault.setAttribute("aria-hidden", "false");
+  els.body.classList.add("presenter-mode");
+  triggerNoise("Class mode loaded.");
+  showBanner("CLASS MODE // SPEAKER NOTES UNSEALED", 2400);
+}
+
+function closePresenterVault() {
+  els.presenterVault.hidden = true;
+  els.presenterVault.setAttribute("aria-hidden", "true");
+  els.body.classList.remove("presenter-mode");
 }
 
 function hideTerminalWindow(immediate = false) {
@@ -691,9 +804,20 @@ function setupTilt(card) {
 }
 
 function handleKeydown(event) {
+  if (event.key === "Escape" && !els.presenterVault.hidden) {
+    closePresenterVault();
+    return;
+  }
+
   const normalizedKey = event.key.length === 1 ? event.key.toLowerCase() : event.key;
 
   keyBuffer = `${keyBuffer}${normalizedKey}`.slice(-20);
+  if (keyBuffer.includes("class")) {
+    keyBuffer = "";
+    openPresenterVault();
+    return;
+  }
+
   if (keyBuffer.includes("punk")) {
     keyBuffer = "";
     activatePunkMode();
@@ -724,6 +848,26 @@ function handleStatusDotClick() {
   }
 }
 
+function handleTapeNoteClick() {
+  tapeClicks += 1;
+  window.clearTimeout(tapeClickTimer);
+  tapeClickTimer = window.setTimeout(() => {
+    tapeClicks = 0;
+  }, 1000);
+
+  if (tapeClicks >= 3) {
+    tapeClicks = 0;
+    openPresenterVault();
+  }
+}
+
+function handleTapeNoteKeydown(event) {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openPresenterVault();
+  }
+}
+
 function setupInteractions() {
   els.tiltCards.forEach(setupTilt);
   els.noiseButton.addEventListener("click", () => {
@@ -735,6 +879,10 @@ function setupInteractions() {
   });
   els.heroTitle.addEventListener("click", triggerGlitch);
   els.statusDot.addEventListener("click", handleStatusDotClick);
+  els.tapeNote.addEventListener("click", handleTapeNoteClick);
+  els.tapeNote.addEventListener("keydown", handleTapeNoteKeydown);
+  els.presenterClose.addEventListener("click", closePresenterVault);
+  els.presenterVaultBackdrop.addEventListener("click", closePresenterVault);
   document.addEventListener("keydown", handleKeydown);
 }
 

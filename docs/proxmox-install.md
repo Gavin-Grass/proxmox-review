@@ -90,4 +90,4 @@ journalctl -u proxmox-review-sync.service -n 50 --no-pager
 - GitHub Pages is static. A `30` second timer can generate commits that are faster than GitHub finishes deploying them.
 - If you want steadier public updates, use `120` or `300` seconds instead.
 
-If you need to present the installer in class, use [docs/install-script-line-by-line.md](install-script-line-by-line.md).
+If you need to present the installer in class, use [docs/install-script-line-by-line.md](install-script-line-by-line.md) for the full breakdown or [docs/install-script-speaker-notes.md](install-script-speaker-notes.md) for the short version.
