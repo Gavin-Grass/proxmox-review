@@ -4,6 +4,9 @@ const els = {
   body: document.body,
   heroTitle: document.querySelector("#heroTitle"),
   noiseButton: document.querySelector("#noiseButton"),
+  fxLayer: document.querySelector("#fxLayer"),
+  riotBanner: document.querySelector("#riotBanner"),
+  riotBannerText: document.querySelector("#riotBannerText"),
   statusDot: document.querySelector("#statusDot"),
   overallStatus: document.querySelector("#overallStatus"),
   nodeLabel: document.querySelector("#nodeLabel"),
@@ -27,7 +30,8 @@ const els = {
   secretCopy: document.querySelector("#secretCopy"),
   secretHint: document.querySelector("#secretHint"),
   toast: document.querySelector("#toast"),
-  tiltCards: [...document.querySelectorAll("[data-tilt]")]
+  tiltCards: [...document.querySelectorAll("[data-tilt]")],
+  metricLabels: [...document.querySelectorAll(".metric-label")]
 };
 
 const statusLabels = {
@@ -102,6 +106,12 @@ let dotClicks = 0;
 let dotTimer = 0;
 let keyBuffer = "";
 let konamiIndex = 0;
+let bannerTimer = 0;
+let chaosTimer = 0;
+let relabelTimer = 0;
+let secretSequenceRun = 0;
+
+const defaultMetricLabels = els.metricLabels.map((node) => node.textContent);
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) {
@@ -176,6 +186,22 @@ function showToast(message) {
   }, 2200);
 }
 
+function showBanner(text, duration = 2300) {
+  els.riotBanner.hidden = false;
+  els.riotBanner.setAttribute("aria-hidden", "false");
+  els.riotBannerText.textContent = text;
+  els.riotBanner.classList.add("is-live");
+
+  clearTimeout(bannerTimer);
+  bannerTimer = window.setTimeout(() => {
+    els.riotBanner.classList.remove("is-live");
+    window.setTimeout(() => {
+      els.riotBanner.hidden = true;
+      els.riotBanner.setAttribute("aria-hidden", "true");
+    }, 260);
+  }, duration);
+}
+
 function triggerGlitch() {
   els.heroTitle.classList.remove("is-glitching");
   void els.heroTitle.offsetWidth;
@@ -198,6 +224,148 @@ function triggerNoise(message = "Board lights kicked.") {
   showToast(message);
 }
 
+function flashSecretPanel() {
+  els.secretPanel.classList.remove("flash");
+  void els.secretPanel.offsetWidth;
+  els.secretPanel.classList.add("flash");
+}
+
+function spawnBadge(text, variant = "cyan") {
+  if (motionQuery.matches) {
+    return;
+  }
+
+  const badge = document.createElement("span");
+  badge.className = `fx-badge fx-badge--${variant}`;
+  badge.textContent = text;
+  badge.style.left = `${10 + Math.random() * 72}%`;
+  badge.style.top = `${18 + Math.random() * 58}%`;
+  badge.style.setProperty("--burst-x", `${(Math.random() - 0.5) * 140}px`);
+  badge.style.setProperty("--burst-y", `${-110 - Math.random() * 90}px`);
+  badge.style.setProperty("--burst-rotate", `${-14 + Math.random() * 28}deg`);
+  els.fxLayer.appendChild(badge);
+  window.setTimeout(() => {
+    badge.remove();
+  }, 2500);
+}
+
+function launchBadgeBurst(words, variants = ["cyan", "lime", "red"]) {
+  words.forEach((word, index) => {
+    window.setTimeout(() => {
+      spawnBadge(word, variants[index % variants.length]);
+    }, index * 90);
+  });
+}
+
+function runTitleRiff(count = 3, spacing = 180) {
+  for (let index = 0; index < count; index += 1) {
+    window.setTimeout(() => {
+      triggerGlitch();
+    }, index * spacing);
+  }
+}
+
+function pulseChaos(duration = 4200) {
+  els.body.classList.add("arcade-overdrive");
+  clearTimeout(chaosTimer);
+  chaosTimer = window.setTimeout(() => {
+    els.body.classList.remove("arcade-overdrive");
+  }, duration);
+}
+
+function temporaryRelabel(labels, duration = 3800) {
+  els.metricLabels.forEach((node, index) => {
+    node.textContent = labels[index] || defaultMetricLabels[index];
+  });
+
+  clearTimeout(relabelTimer);
+  relabelTimer = window.setTimeout(() => {
+    els.metricLabels.forEach((node, index) => {
+      node.textContent = defaultMetricLabels[index];
+    });
+  }, duration);
+}
+
+function playDotDiagnosticSequence() {
+  secretSequenceRun += 1;
+  const runId = secretSequenceRun;
+
+  const frames = [
+    {
+      ascii: [
+        "> booting backstage check",
+        "> scanning for hostname leaks",
+        "> scanning for IP leaks",
+        "> scanning for guest-name leaks"
+      ].join("\n"),
+      copy: "Backstage scan started. Fake terminal energy, real privacy rules.",
+      hint: "Stage one: look for anything that would embarrass the repo in public."
+    },
+    {
+      ascii: [
+        "[ok] hostname leak: blocked",
+        "[ok] IP leak: blocked",
+        "[ok] guest-name leak: blocked",
+        "[??] vibe level: unstable cool"
+      ].join("\n"),
+      copy: "The board checked for snitch data and came back empty-handed.",
+      hint: "Stage two: the machine remains dramatic but legally boring."
+    },
+    {
+      ascii: [
+        "ACCESS: DENIED",
+        "LOG NOISE: ACCEPTED",
+        "CLASS FLEX: ENABLED",
+        "SHOWTIME: READY"
+      ].join("\n"),
+      copy: "Diagnostic complete. Nothing private escaped, but the theatrics definitely did.",
+      hint: "This is the one to spam in front of the class if you want the fastest payoff."
+    }
+  ];
+
+  frames.forEach((frame, index) => {
+    window.setTimeout(() => {
+      if (runId !== secretSequenceRun) {
+        return;
+      }
+
+      els.secretAscii.textContent = frame.ascii;
+      els.secretCopy.textContent = frame.copy;
+      els.secretHint.textContent = frame.hint;
+      flashSecretPanel();
+    }, index * 760);
+  });
+}
+
+function runEggEffects(kind) {
+  if (kind === "punk") {
+    showBanner("PUNK MODE // PRIVATE DATA STAYS BURIED", 2600);
+    temporaryRelabel(["CPU Riot", "RAM Wreck", "Disk Noise", "Guest Mob"], 4600);
+    launchBadgeBurst(["PUNK PATCH", "SAFE FLEX", "NO NAMES", "NO IPS", "LOUD BOARD"]);
+    runTitleRiff(4, 150);
+    pulseChaos(2400);
+    return;
+  }
+
+  if (kind === "dot") {
+    showBanner("BACKSTAGE DIAGNOSTIC // ACCESS DENIED", 2200);
+    launchBadgeBurst(["DENIED", "SAFE", "CHECK", "CLEAN"], ["red", "cyan", "lime"]);
+    playDotDiagnosticSequence();
+    return;
+  }
+
+  if (kind === "konami") {
+    showBanner("KONAMI MODE // DEMO CHAOS ENABLED", 3200);
+    temporaryRelabel(["Boss Fight", "Combo Meter", "Loot Crate", "Crew Size"], 5200);
+    launchBadgeBurst(
+      ["1UP", "COMBO", "GLITCH", "BOSS MODE", "SAFE DATA", "ARCADE"],
+      ["lime", "red", "cyan"]
+    );
+    runTitleRiff(6, 130);
+    pulseChaos(5600);
+  }
+}
+
 function revealSecret(kind) {
   const egg = easterEggs[kind];
 
@@ -218,6 +386,8 @@ function revealSecret(kind) {
   els.secretHint.textContent = egg.hint;
 
   triggerNoise(`${egg.title} unlocked.`);
+  flashSecretPanel();
+  runEggEffects(kind);
 
   if (!motionQuery.matches) {
     els.secretPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -361,7 +531,6 @@ function setupInteractions() {
   els.noiseButton.addEventListener("click", () => {
     triggerNoise("Lights kicked. Board still sanitized.");
   });
-  els.heroTitle.addEventListener("mouseenter", triggerGlitch);
   els.heroTitle.addEventListener("click", triggerGlitch);
   els.statusDot.addEventListener("click", handleStatusDotClick);
   document.addEventListener("keydown", handleKeydown);

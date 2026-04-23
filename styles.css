@@ -77,6 +77,18 @@ body.mode-konami {
   --accent-3: #f7ff6a;
 }
 
+body.arcade-overdrive .metric-card,
+body.arcade-overdrive .panel,
+body.arcade-overdrive .hero-copy,
+body.arcade-overdrive .hero-panel {
+  animation: chaos-wobble 460ms ease-in-out 10 alternate;
+}
+
+body.arcade-overdrive::after {
+  opacity: 1;
+  filter: saturate(1.45);
+}
+
 button,
 input,
 textarea,
@@ -89,6 +101,70 @@ select {
   inset: 0;
   pointer-events: none;
   z-index: 3;
+}
+
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.riot-banner {
+  position: fixed;
+  left: 50%;
+  top: 1rem;
+  z-index: 9;
+  transform: translate(-50%, -180%);
+  min-width: min(90vw, 700px);
+  padding: 0.9rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 95, 87, 0.22), rgba(0, 221, 255, 0.18)),
+    rgba(8, 11, 18, 0.96);
+  color: var(--text);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38);
+  opacity: 0;
+  transition: transform 260ms ease, opacity 260ms ease;
+}
+
+.riot-banner.is-live {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.fx-badge {
+  position: absolute;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 11, 18, 0.92);
+  color: var(--text);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.28);
+  animation: badge-burst 2400ms ease forwards;
+}
+
+.fx-badge--cyan {
+  color: var(--accent-2);
+}
+
+.fx-badge--lime {
+  color: var(--accent-3);
+}
+
+.fx-badge--red {
+  color: var(--accent);
 }
 
 .ambient-tag {
@@ -580,6 +656,10 @@ dd {
   color: var(--muted);
 }
 
+.secret-panel.flash {
+  animation: panel-flash 640ms ease;
+}
+
 .toast {
   position: fixed;
   right: 1rem;
@@ -675,6 +755,71 @@ dd {
   }
 }
 
+@keyframes badge-burst {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.84) rotate(var(--burst-rotate, 0deg));
+  }
+
+  16% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translateY(calc(var(--burst-y, -120px)))
+      translateX(calc(var(--burst-x, 0px)))
+      scale(1.05)
+      rotate(calc(var(--burst-rotate, 0deg) + 6deg));
+  }
+}
+
+@keyframes chaos-wobble {
+  0% {
+    transform:
+      perspective(1000px)
+      rotateX(var(--tilt-x, 0deg))
+      rotateY(var(--tilt-y, 0deg))
+      translateY(var(--tilt-lift, 0px))
+      rotate(0deg);
+  }
+
+  50% {
+    transform:
+      perspective(1000px)
+      rotateX(var(--tilt-x, 0deg))
+      rotateY(var(--tilt-y, 0deg))
+      translateY(var(--tilt-lift, 0px))
+      rotate(0.8deg);
+  }
+
+  100% {
+    transform:
+      perspective(1000px)
+      rotateX(var(--tilt-x, 0deg))
+      rotateY(var(--tilt-y, 0deg))
+      translateY(var(--tilt-lift, 0px))
+      rotate(-0.8deg);
+  }
+}
+
+@keyframes panel-flash {
+  0% {
+    box-shadow: 0 0 0 rgba(0, 221, 255, 0);
+  }
+
+  40% {
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.56),
+      0 0 0 2px rgba(0, 221, 255, 0.28);
+  }
+
+  100% {
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.56);
+  }
+}
+
 @media (max-width: 960px) {
   .hero,
   .detail-grid {
@@ -736,6 +881,10 @@ dd {
     left: 0.75rem;
     bottom: 0.75rem;
     text-align: center;
+  }
+
+  .riot-banner {
+    width: calc(100% - 1rem);
   }
 }
 
