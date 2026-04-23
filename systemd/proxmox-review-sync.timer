@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Proxmox review sync on a schedule
+
+[Timer]
+OnBootSec=@SYNC_INTERVAL@s
+OnUnitActiveSec=@SYNC_INTERVAL@s
+AccuracySec=1s
+Unit=proxmox-review-sync.service
+
+[Install]
+WantedBy=timers.target

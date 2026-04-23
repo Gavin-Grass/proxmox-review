@@ -6,4 +6,6 @@
 *.html text eol=lf
 *.css text eol=lf
 *.js text eol=lf
-
+*.service text eol=lf
+*.timer text eol=lf
+*.example text eol=lf

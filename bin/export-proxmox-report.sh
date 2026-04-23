@@ -2,7 +2,8 @@
 set -Eeuo pipefail
 
 readonly SCRIPT_NAME="${0##*/}"
-readonly DEFAULT_CONFIG="/etc/proxmox-review.conf"
+readonly DEFAULT_CONFIG="/etc/proxmox-review/proxmox-review.env"
+readonly LEGACY_CONFIG="/etc/proxmox-review.conf"
 readonly DEFAULT_OUTPUT="./data/report.json"
 
 CONFIG_PATH="$DEFAULT_CONFIG"
@@ -12,7 +13,7 @@ CONFIG_EXPLICIT=0
 usage() {
   cat <<'EOF'
 Usage:
-  export-proxmox-report.sh [--output ./data/report.json] [-c /etc/proxmox-review.conf]
+  export-proxmox-report.sh [--output ./data/report.json] [-c /etc/proxmox-review/proxmox-review.env]
 
 Options:
   -c, --config PATH   Load configuration from PATH.
@@ -49,6 +50,9 @@ done
 if [[ -f "$CONFIG_PATH" ]]; then
   # shellcheck disable=SC1090
   source "$CONFIG_PATH"
+elif (( CONFIG_EXPLICIT == 0 )) && [[ -f "$LEGACY_CONFIG" ]]; then
+  # shellcheck disable=SC1090
+  source "$LEGACY_CONFIG"
 elif (( CONFIG_EXPLICIT == 1 )); then
   echo "Configuration file not found: $CONFIG_PATH" >&2
   exit 1
@@ -370,4 +374,3 @@ EOF
 } > "$OUTPUT_PATH"
 
 printf 'Wrote sanitized report to %s\n' "$OUTPUT_PATH"
-
