@@ -1,18 +1,18 @@
 {
   "site": {
     "title": "Proxmox Review Board",
-    "generated_at": "2026-09-19T07:42:04Z",
+    "generated_at": "2026-09-19T08:42:05Z",
     "node_label": "Gavin'sProxMox",
     "privacy_mode": "sanitized-static-report",
     "overall_status": "ok"
   },
   "summary": {
-    "cpu_percent": 1,
+    "cpu_percent": 0,
     "cpu_cores": 8,
-    "load": [0.03, 0.06, 0.02],
-    "uptime": "14d 11h 5m",
+    "load": [0.02, 0.04, 0.00],
+    "uptime": "14d 12h 5m",
     "memory": {
-      "used_bytes": 7923965952,
+      "used_bytes": 7908990976,
       "total_bytes": 33484525568,
       "used_percent": 23
     },
@@ -23,9 +23,9 @@
       "used_percent": 0
     },
     "root_fs": {
-      "used_bytes": 10516881408,
+      "used_bytes": 10516905984,
       "total_bytes": 72722055168,
-      "available_bytes": 58464276480,
+      "available_bytes": 58464251904,
       "used_percent": 16
     },
     "filesystems_above_threshold": 0,
