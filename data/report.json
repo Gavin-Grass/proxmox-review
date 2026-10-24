@@ -1,40 +1,40 @@
 {
   "site": {
     "title": "Proxmox Review Board",
-    "generated_at": "2026-10-23T22:38:07Z",
+    "generated_at": "2026-10-24T00:04:01Z",
     "node_label": "Gavin'sProxMox",
     "privacy_mode": "sanitized-static-report",
-    "overall_status": "ok"
+    "overall_status": "warning"
   },
   "summary": {
-    "cpu_percent": 0,
+    "cpu_percent": 11,
     "cpu_cores": 8,
-    "load": [0.05, 0.16, 0.16],
-    "uptime": "12d 23h 5m",
+    "load": [2.51, 2.65, 2.29],
+    "uptime": "0d 1h 0m",
     "memory": {
-      "used_bytes": 7925456896,
+      "used_bytes": 5444657152,
       "total_bytes": 33484521472,
-      "used_percent": 23
+      "used_percent": 16
     },
     "swap": {
       "enabled": true,
-      "used_bytes": 598016,
+      "used_bytes": 45068288,
       "total_bytes": 8589930496,
       "used_percent": 0
     },
     "root_fs": {
-      "used_bytes": 10649731072,
+      "used_bytes": 10649280512,
       "total_bytes": 72722055168,
-      "available_bytes": 58331426816,
+      "available_bytes": 58331877376,
       "used_percent": 16
     },
-    "filesystems_above_threshold": 0,
+    "filesystems_above_threshold": 1,
     "virtual_machines": {
       "running": 0,
       "total": 0
     },
     "containers": {
-      "running": 5,
+      "running": 4,
       "total": 5
     },
     "zfs": {
@@ -47,7 +47,7 @@
     }
   },
   "alerts": [
-    "No active threshold alerts"
+    "1 filesystem(s) are at or above 85% usage"
   ],
   "privacy": [
     "Hostnames, FQDNs, IPs, MAC addresses, serial numbers, and usernames are excluded.",
